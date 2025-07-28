@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>A Reason to Drink - Fantasy League</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 2rem;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    input[type="text"], textarea {
+      width: 80%;
+      padding: 0.7rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      background-color: #222;
+      color: white;
+    }
+
+    input[type="radio"], input[type="checkbox"] {
+      accent-color: #00cc88;
+      margin-right: 5px;
+    }
+
+    label {
+      margin: 1rem;
+      font-size: 1.1rem;
+      display: inline-block;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #00cc88;
+      border: none;
+      border-radius: 5px;
+      color: white;
+    }
+
+    .thank-you {
+      display: none;
+      font-size: 1.4rem;
+      color: #00ff88;
+      margin-top: 2rem;
+    }
+
+    .miss-message {
+      display: none;
+      font-size: 1.4rem;
+      color: #ff4d4d;
+      margin-top: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        text-shadow: 0 0 5px #ff4d4d;
+        opacity: 1;
+      }
+      50% {
+        text-shadow: 0 0 20px #ff4d4d;
+        opacity: 0.8;
+      }
+    }
+
+    .rsvp-deadline {
+      margin-top: 3rem;
+      font-size: 1rem;
+      color: #ff4d4d;
+      animation: pulseGlow 2.5s infinite ease-in-out;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🏈 A Reason to Drink Fantasy League 🥃</h1>
+<p><strong>Draft Date: August 25th at 6 PM</strong></p>
+<p>Are you in?</p>
+
+<form action="https://formspree.io/f/mvgqrkka" method="POST" id="rsvpForm">
+  <input type="text" name="name" placeholder="Your name" required /><br><br>
+
+  <label>
+    <input type="radio" name="response" value="Yes" required id="yesOption" />
+    Yes
+  </label>
+  <label>
+    <input type="radio" name="response" value="No" required id="noOption" />
+    No
+  </label><br><br>
+
+  <label style="display:block;">
+    <input type="checkbox" id="agreeFee" name="agreeFee" value="Agreed to pay" />
+    I agree to pay the $100 entry fee
+  </label><br>
+
+  <textarea name="comment" placeholder="Any trash talk or thoughts?" rows="4"></textarea><br><br>
+
+  <button type="submit">Submit</button>
+</form>
+
+<div class="thank-you" id="thankYouMessage">
+  🙌 Thanks for your response! We’ll see you on draft day.
+</div>
+
+<div class="miss-message" id="missMessage">
+  😔 You shall be missed... unlike Calvin.
+</div>
+
+<p class="rsvp-deadline" id="countdown">🕒 Calculating RSVP deadline...</p>
+
+<script>
+  // Countdown timer
+  function updateCountdown() {
+    const deadline = new Date('2025-08-15T23:59:59-07:00'); // PST
+    const now = new Date();
+    const diff = deadline - now;
+    const countdownElem = document.getElementById("countdown");
+
+    if (diff <= 0) {
+      countdownElem.textContent = "🚫 RSVP CLOSED";
+      countdownElem.style.color = "#ff3333";
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    countdownElem.textContent = `🕒 RSVP closes in ${days}d ${hours}h ${minutes}m ${seconds}s (PST)`;
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // Form handling
+  const form = document.getElementById('rsvpForm');
+  const thankYouMessage = document.getElementById('thankYouMessage');
+  const missMessage = document.getElementById('missMessage');
+  const agreeCheckbox = document.getElementById('agreeFee');
+  const yesRadio = document.getElementById('yesOption');
+  const noRadio = document.getElementById('noOption');
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const isYes = yesRadio.checked;
+    const isNo = noRadio.checked;
+    const agreed = agreeCheckbox.checked;
+
+    if (isYes && !agreed) {
+      alert("You must agree to pay the $100 entry fee to join.");
+      return;
+    }
+
+    const formData = new FormData(form);
+    fetch(form.action, {
+      method: form.method,
+      body: formData,
+      headers: { 'Accept': 'application/json' }
+    }).then(response => {
+      if (response.ok) {
+        form.style.display = 'none';
+        if (isYes) {
+          thankYouMessage.style.display = 'block';
+        } else if (isNo) {
+          missMessage.style.display = 'block';
+        }
+      } else {
+        alert("There was an issue submitting. Try again later.");
+      }
+    }).catch(() => {
+      alert("Error submitting the form. Please try again.");
+    });
+  });
+</script>
+
+</body>
+</html>
